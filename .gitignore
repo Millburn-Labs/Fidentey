@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# Wallet secrets — never commit these
+.midnight-state.json
+.midnight-wallet-state/
+.counter-keys.json
+*.seed
+
+# Editor / OS
+.DS_Store
