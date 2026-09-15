@@ -89,4 +89,10 @@ _[LEAVE PLACEHOLDER — to be filled in manually]_
 
 ## Screenshots
 
-_[LEAVE PLACEHOLDER — compile output and contract address screenshots to be added]_
+**Successful compile:**
+
+![Compile output showing both circuits compiled successfully](docs/screenshots/compile-output.png)
+
+**Deployed contract:**
+
+![Deployed contract address on Preview](docs/screenshots/deployed-contract.png)
