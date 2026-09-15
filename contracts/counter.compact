@@ -1,0 +1,62 @@
+// This file is part of the Midnight Builder Challenge — Level 1.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Private Counter
+//
+// A public counter that only the person who knows a secret PIN can
+// increment. Anyone can see the counter go up, but nobody — including the
+// chain itself — ever learns the PIN. Each circuit proves "I know the PIN
+// that matches the commitment on the ledger" without revealing it.
+//
+// PUBLIC (on-chain ledger state, visible to anyone):
+//   - round      : the counter value itself (Counter)
+//   - pinHash    : a one-way commitment (hash) of the owner's secret PIN.
+//                  Set at deploy time and updated by setPin(), both via a
+//                  deliberate disclose() so the commitment can live on-chain.
+//
+// PRIVATE (witness input, supplied off-chain by the caller, never written
+// to the ledger and never visible to the indexer, other users, or the
+// chain itself):
+//   - localSecretPin : the raw PIN. Only its *hash* ever touches the chain —
+//                       the PIN itself is never passed to disclose() and
+//                       never leaves the caller's local witness computation.
+//
+// WHAT THE USER PROVES WITHOUT REVEALING:
+//   Calling increment() or setPin() proves "I know a PIN whose hash equals
+//   the stored pinHash" — without revealing the PIN, without revealing
+//   anything about it, and without ever putting it in a transaction.
+
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+export ledger round: Counter;
+export ledger pinHash: Bytes<32>;
+
+constructor(initialPinHash: Bytes<32>) {
+  pinHash = disclose(initialPinHash);
+}
+
+witness localSecretPin(): Bytes<32>;
+
+// Pure helper: anyone can locally hash a candidate pin to prepare a new
+// commitment before calling setPin. Touches no ledger state and needs no
+// witness, so it compiles to a plain callable function, not a proof.
+export circuit hashPin(pin: Bytes<32>): Bytes<32> {
+  return persistentHash<Bytes<32>>(pin);
+}
+
+// Advance the counter. The pin is checked against the stored commitment
+// entirely inside the zero-knowledge proof — it never appears on-chain.
+export circuit increment(): [] {
+  assert(persistentHash<Bytes<32>>(localSecretPin()) == pinHash, "invalid pin");
+  round.increment(1);
+}
+
+// Rotate the pin. The caller proves they know the *current* pin, then
+// deliberately discloses the hash of the *new* pin so it can become the
+// next public commitment.
+export circuit setPin(newPinHash: Bytes<32>): [] {
+  assert(persistentHash<Bytes<32>>(localSecretPin()) == pinHash, "invalid pin");
+  pinHash = disclose(newPinHash);
+}
