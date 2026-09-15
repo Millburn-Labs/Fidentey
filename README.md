@@ -4,10 +4,10 @@
 
 ## Contract Address
 
-| Network  | Address                          |
-|----------|-----------------------------------|
-| Preview  | _pending — deploy in progress_    |
-| Preprod  | _not deployed_                    |
+| Network  | Address                                                             |
+|----------|----------------------------------------------------------------------|
+| Preview  | `66151e052480e5419f9ccd3cea5877ec9dcdc5d0a6706f568f212d1eb8187178`   |
+| Preprod  | _not deployed_                                                        |
 
 ## What This Does
 
@@ -49,9 +49,18 @@ git clone <this-repo-url>
 cd counter
 npm install
 
-# Start the local proof server (needed for compiling/testing/deploying)
-docker pull midnightnetwork/proof-server
-docker run -p 6300:6300 midnightnetwork/proof-server
+# Start the local proof server (needed for deploying — not for compile/test)
+#
+# Use midnightntwrk/proof-server (no "e"), not midnightnetwork/proof-server:
+# the latter is a stale image built against an older ledger version than the
+# current SDK expects. It doesn't error on a mismatch — it silently accepts
+# every /prove request and spins at 100% CPU forever without responding,
+# which looks exactly like a hung/slow proof until you check its memory
+# usage (flat, because it isn't actually doing anything).
+docker pull midnightntwrk/proof-server:8.1.0
+docker run -d --name midnight-proof-server -p 6300:6300 midnightntwrk/proof-server:8.1.0
+# First run downloads ~25MB of proving/verifying keys before it's ready —
+# wait for `curl http://localhost:6300` to return 200 before deploying.
 
 # Compile the contract
 npm run compile

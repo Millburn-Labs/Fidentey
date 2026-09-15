@@ -10,6 +10,7 @@ import { createWallet, persistWalletState, unshieldedToken, type WalletContext }
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { WebSocket } from 'ws';
 import * as Rx from 'rxjs';
+import { Agent, setGlobalDispatcher } from 'undici';
 
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
@@ -20,6 +21,14 @@ import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-j
 
 // @ts-expect-error Required for wallet sync
 globalThis.WebSocket = WebSocket;
+
+// Node's global fetch (backed by undici) defaults to a 5-minute headers/body
+// timeout. Proving a real circuit against a CPU-constrained local proof
+// server can legitimately take longer than that — the server keeps working,
+// but the client gives up and reports a generic "Transport error" even
+// though nothing actually failed. Raise the ceiling well past any realistic
+// proof time instead of that default.
+setGlobalDispatcher(new Agent({ headersTimeout: 1_800_000, bodyTimeout: 1_800_000, connectTimeout: 60_000 }));
 
 const PRIVATE_STATE_ID = 'counterPrivateState';
 

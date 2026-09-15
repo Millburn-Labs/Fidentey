@@ -7,5 +7,9 @@ dist/
 .counter-keys.json
 *.seed
 
+# Local private-state store and deploy run logs
+midnight-level-db/
+deploy.log
+
 # Editor / OS
 .DS_Store
