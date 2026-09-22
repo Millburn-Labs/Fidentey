@@ -22,6 +22,31 @@ function outcomeFromCode(code: bigint): RevealOutcome {
   return 'too-high';
 }
 
+// midnight-js-contracts wraps failures in nested `Error(msg, { cause })` chains
+// (e.g. "Unexpected error submitting scoped transaction '<unnamed>': Error"),
+// and the outer wrapper's own message is frequently uninformative on its own.
+// Log every level to the console (with stacks) and surface the deepest
+// non-empty message in the UI instead of just the outer "Error".
+function describeError(e: unknown): string {
+  console.error('[Fidentey] circuit call failed:', e);
+  let deepest = 'Unknown error.';
+  let cur: unknown = e;
+  let depth = 0;
+  while (cur && depth < 10) {
+    if (cur instanceof Error) {
+      console.error(`[Fidentey]   cause[${depth}]:`, cur.name, cur.message, cur.stack);
+      if (cur.message && cur.message !== 'Error') deepest = cur.message;
+      cur = (cur as { cause?: unknown }).cause;
+    } else {
+      console.error(`[Fidentey]   cause[${depth}] (non-Error):`, cur);
+      deepest = typeof cur === 'string' ? cur : JSON.stringify(cur);
+      cur = undefined;
+    }
+    depth++;
+  }
+  return deepest;
+}
+
 // Demo-only local-storage encryption password for the browser's private-state
 // database (secret number lives only in IndexedDB on this device, encrypted
 // at rest with this key). Mirrors the placeholder pattern already used by
@@ -120,7 +145,7 @@ export function useMidnight() {
       accountIdRef.current = null;
       setAddress(null);
       setStatus('error');
-      setError(e instanceof Error ? e.message : 'Failed to connect wallet.');
+      setError(describeError(e));
     }
   }, []);
 
@@ -145,7 +170,7 @@ export function useMidnight() {
       setLastTxHash(result.public.txHash);
       return result.public.txHash;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'submitGuess failed.');
+      setError(describeError(e));
       throw e;
     } finally {
       setBusy(false);
@@ -176,7 +201,7 @@ export function useMidnight() {
       setLastOutcome(outcome);
       return outcome;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'revealGuess failed.');
+      setError(describeError(e));
       throw e;
     } finally {
       setBusy(false);
