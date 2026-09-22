@@ -1,31 +1,35 @@
-# Private Counter
+# Fidentey
 
-> A public counter on Midnight that only someone who knows a secret PIN can increment — the PIN itself never touches the chain, only a commitment to it.
+> A private guess-the-number game on Midnight — prove a guess is too high, too low, or correct without ever revealing the secret number.
 
 ## Contract Address
 
 | Network  | Address                                                             |
 |----------|----------------------------------------------------------------------|
-| Preview  | `66151e052480e5419f9ccd3cea5877ec9dcdc5d0a6706f568f212d1eb8187178`   |
+| Preview  | `be09d0480809e425d8b271bb36d3e95992ce9d8d1446fcce86a75319795706b0`   |
 | Preprod  | _not deployed_                                                        |
 
 ## What This Does
 
-This contract keeps a simple counter (`round`) on the public Midnight ledger. Anyone can read the current count. But advancing it — or changing who is allowed to advance it — requires proving knowledge of a secret PIN, without ever revealing that PIN to the chain, the indexer, or any observer.
+The host commits to a secret number (1–1000) when the contract is deployed. From then on, any player can submit a guess. Only the host — the one person who actually knows the number — can reveal the result of a pending guess, and that reveal discloses nothing except "too low," "too high," or "correct." The secret number itself is never written to the chain until a guess actually wins, at which point revealing it is the deliberate, natural conclusion of the game.
 
-At deploy time the owner picks a PIN and the contract stores only `pinHash`, a one-way hash commitment to it. To call `increment()`, the caller supplies their PIN as a private witness; the circuit hashes it inside a zero-knowledge proof and checks it against the stored `pinHash`. If it matches, the counter goes up and the proof is valid — but the PIN itself is never part of the transaction. A `setPin()` circuit lets the current PIN holder rotate to a new PIN the same way, deliberately disclosing only the new commitment.
+Under the hood: at deploy time the host discloses only a one-way hash commitment to the number (`secretHash`). Each round, a player calls `submitGuess()` to post their guess publicly. The host then calls `revealGuess()`, supplying the real number as a private witness; the circuit re-hashes it, checks it against the stored commitment (proving the host isn't lying about which number they committed to), compares it against the pending guess entirely inside the zero-knowledge proof, and discloses only the three-way outcome. If the guess is correct, the circuit also discloses the number itself and marks the game solved.
 
 ## Privacy Model
 
 - **What is PUBLIC (on-chain, visible to anyone):**
-  - `round` — the current counter value
-  - `pinHash` — a 32-byte hash commitment to the current PIN (never the PIN itself)
+  - `secretHash` — a 32-byte hash commitment to the secret number (never the number itself, until a win)
+  - `pendingGuess` — the most recently submitted guess
+  - `attempts` — how many guesses have been submitted
+  - `solved` — whether the game has been won
+  - `lastResult` — the outcome of the last reveal (too low / too high / correct)
+  - `revealedNumber` — the secret number, populated only once the game is solved
 
 - **What is PRIVATE (private witness, never on-chain):**
-  - `localSecretPin` — the raw PIN, supplied off-chain by the caller as a witness. It exists only inside the caller's local proof computation and is never written to the ledger, a transaction, or any log.
+  - `hostSecretNumber` — the raw secret number, supplied off-chain by the host as a witness. It exists only inside the host's local proof computation and is never written to the ledger, a transaction, or any log while the game is open.
 
 - **What the user PROVES without revealing:**
-  - Calling `increment()` or `setPin()` proves "I know a PIN whose hash equals the commitment currently stored on-chain" — without revealing the PIN, without revealing any information that would help guess it, and without it ever appearing in cleartext anywhere.
+  - Calling `revealGuess()` proves "I know the number whose hash equals the commitment stored on-chain, and here is how it compares to the pending guess" — without revealing the number, unless the guess is correct, in which case revealing it is the deliberate point of winning.
 
 ## Tech Stack
 
@@ -46,7 +50,7 @@ At deploy time the owner picks a PIN and the contract stores only `pinHash`, a o
 ```bash
 # Clone and install
 git clone <this-repo-url>
-cd counter
+cd fidentey
 npm install
 
 # Start the local proof server (needed for deploying — not for compile/test)
@@ -81,7 +85,7 @@ npm run network
 npm test
 ```
 
-Covers: circuit logic (deterministic deploy, rejecting a wrong PIN), state transitions (incrementing, rotating the PIN), and that private inputs are never exposed (the raw PIN never appears anywhere in the public ledger state).
+Covers: circuit logic (deterministic deploy, rejecting a reveal from someone who doesn't know the number), state transitions (too low → too high → correct across guesses, rejecting further guesses once solved), and that private inputs are never exposed (the raw secret number never appears anywhere in the public ledger state before a win).
 
 ## Initial Idea
 
@@ -89,10 +93,4 @@ _[LEAVE PLACEHOLDER — to be filled in manually]_
 
 ## Screenshots
 
-**Successful compile:**
-
-![Compile output showing both circuits compiled successfully](docs/screenshots/compile-output.png)
-
-**Deployed contract:**
-
-![Deployed contract address on Preview](docs/screenshots/deployed-contract.png)
+_[LEAVE PLACEHOLDER — compile output and contract address screenshots to be added]_
