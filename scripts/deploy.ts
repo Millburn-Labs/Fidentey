@@ -1,10 +1,9 @@
 /**
- * Deploy the private-counter contract to a Midnight network
+ * Deploy the Fidentey guess-the-number contract to a Midnight network
  * (undeployed by default; use --network preview|preprod for public networks).
  */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { randomBytes } from 'node:crypto';
 import { resolveNetwork, getOrCreateWallet, formatWalletBackupNotice, recordDeployment } from './network.js';
 import { createWallet, persistWalletState, unshieldedToken, type WalletContext } from './wallet.js';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -30,7 +29,7 @@ globalThis.WebSocket = WebSocket;
 // proof time instead of that default.
 setGlobalDispatcher(new Agent({ headersTimeout: 1_800_000, bodyTimeout: 1_800_000, connectTimeout: 60_000 }));
 
-const PRIVATE_STATE_ID = 'counterPrivateState';
+const PRIVATE_STATE_ID = 'fidenteyPrivateState';
 
 const { network, config: networkConfig } = resolveNetwork();
 const WALLET = getOrCreateWallet(network);
@@ -40,27 +39,28 @@ const SEED = WALLET.seed;
   if (notice) console.log(notice);
 }
 
-// ─── Demo pin ────────────────────────────────────────────────────────────────
+// ─── Demo secret number ─────────────────────────────────────────────────────
 //
-// The pin this contract is configured with at deploy time. Generated once
-// and cached locally (gitignored) so re-running deploy or the CLI demo
-// reuses the same pin instead of locking everyone out of the freshly
+// The secret number this game is configured with at deploy time. Generated
+// once and cached locally (gitignored) so re-running deploy or the CLI demo
+// reuses the same number instead of locking everyone out of the freshly
 // deployed contract.
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const keysPath = path.resolve(__dirname, '..', '.counter-keys.json');
+const keysPath = path.resolve(__dirname, '..', '.fidentey-keys.json');
 
 interface DemoKeys {
-  pin: string;
+  secretNumber: number;
 }
 
 function loadOrCreateDemoKeys(): DemoKeys {
   if (fs.existsSync(keysPath)) {
     return JSON.parse(fs.readFileSync(keysPath, 'utf8'));
   }
-  const keys: DemoKeys = { pin: randomBytes(32).toString('hex') };
+  // 1-1000, matching the range described to players in the README.
+  const keys: DemoKeys = { secretNumber: 1 + Math.floor(Math.random() * 1000) };
   fs.writeFileSync(keysPath, JSON.stringify(keys, null, 2));
-  console.log(`  Generated demo pin → ${path.basename(keysPath)} (gitignored)\n`);
+  console.log(`  Generated demo secret number → ${path.basename(keysPath)} (gitignored)\n`);
   return keys;
 }
 
@@ -87,7 +87,7 @@ async function waitForProofServer(maxAttempts = 60, delayMs = 2000): Promise<boo
 
 // ─── Compiled contract loading ──────────────────────────────────────────────
 
-const zkConfigPath = path.resolve(__dirname, '..', 'managed', 'counter');
+const zkConfigPath = path.resolve(__dirname, '..', 'managed', 'fidentey');
 const contractPath = path.join(zkConfigPath, 'contract', 'index.js');
 
 if (!fs.existsSync(contractPath)) {
@@ -95,18 +95,19 @@ if (!fs.existsSync(contractPath)) {
   process.exit(1);
 }
 
-const CounterContract = await import(pathToFileURL(contractPath).href);
+const FidenteyContract = await import(pathToFileURL(contractPath).href);
 
 // The constructor never calls any witness, but the generated Contract class
 // still validates that every declared witness has a function-valued
 // implementation. This placeholder is never actually invoked at deploy
 // time — the real value is supplied by callers when they later run
-// increment or setPin (see tests/witnesses.ts for the real implementation).
+// submitGuess or revealGuess (see tests/witnesses.ts for the real
+// implementation).
 const deployWitnesses = {
-  localSecretPin: ({ privateState }: any) => [privateState, new Uint8Array(32)],
+  hostSecretNumber: ({ privateState }: any) => [privateState, 0n],
 };
 
-const compiledContract = CompiledContract.make('counter', CounterContract.Contract).pipe(
+const compiledContract = CompiledContract.make('fidentey', FidenteyContract.Contract).pipe(
   CompiledContract.withWitnesses(deployWitnesses as any),
   CompiledContract.withCompiledFileAssets(zkConfigPath),
 );
@@ -135,7 +136,7 @@ async function createProviders(walletCtx: WalletContext) {
 
   return {
     privateStateProvider: levelPrivateStateProvider({
-      privateStateStoreName: 'counter-state',
+      privateStateStoreName: 'fidentey-state',
       accountId,
       privateStoragePasswordProvider: () => privateStatePassword,
     }),
@@ -151,12 +152,12 @@ async function createProviders(walletCtx: WalletContext) {
 
 async function main() {
   console.log('\n╔══════════════════════════════════════════════════════════════╗');
-  console.log(`║  Deploy private-counter to ${network}`);
+  console.log(`║  Deploy Fidentey to ${network}`);
   console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
   const demoKeys = loadOrCreateDemoKeys();
-  const { pureCircuits } = CounterContract;
-  const initialPinHash: Uint8Array = pureCircuits.hashPin(new Uint8Array(Buffer.from(demoKeys.pin, 'hex')));
+  const { pureCircuits } = FidenteyContract;
+  const initialSecretHash: Uint8Array = pureCircuits.hashNumber(BigInt(demoKeys.secretNumber));
 
   const seed = SEED;
 
@@ -308,7 +309,7 @@ async function main() {
     try {
       deployed = await deployContract(providers, {
         compiledContract: compiledContract as any,
-        args: [initialPinHash],
+        args: [initialSecretHash],
         privateStateId: PRIVATE_STATE_ID,
         initialPrivateState: {},
       });

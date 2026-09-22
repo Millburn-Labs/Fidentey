@@ -4,7 +4,7 @@ dist/
 # Wallet secrets — never commit these
 .midnight-state.json
 .midnight-wallet-state/
-.counter-keys.json
+.fidentey-keys.json
 *.seed
 
 # Local private-state store and deploy run logs

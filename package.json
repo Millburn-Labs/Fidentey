@@ -1,11 +1,11 @@
 {
-  "name": "midnight-private-counter",
+  "name": "fidentey",
   "version": "1.0.0",
   "type": "module",
-  "description": "A public counter on Midnight that only someone who knows a secret PIN can increment — the PIN never touches the chain, only its commitment.",
+  "description": "A private guess-the-number game on Midnight — prove a guess is too high, too low, or correct without ever revealing the secret number.",
   "license": "MIT",
   "scripts": {
-    "compile": "compact compile contracts/counter.compact managed/counter",
+    "compile": "compact compile contracts/fidentey.compact managed/fidentey",
     "test": "vitest run",
     "deploy": "npx tsx scripts/deploy.ts",
     "network": "npx tsx scripts/network.ts",
@@ -43,7 +43,7 @@
     "blockchain",
     "zero-knowledge",
     "privacy",
-    "counter"
+    "guess-the-number"
   ],
   "allowScripts": {
     "classic-level@3.0.0": true,
