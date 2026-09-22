@@ -2,12 +2,18 @@
 
 > A private guess-the-number game on Midnight — prove a guess is too high, too low, or correct without ever revealing the secret number.
 
+## Live Demo
+
+[PASTE LIVE URL AFTER DEPLOYING FRONTEND]
+
 ## Contract Address
 
 | Network  | Address                                                             |
 |----------|----------------------------------------------------------------------|
 | Preview  | `be09d0480809e425d8b271bb36d3e95992ce9d8d1446fcce86a75319795706b0`   |
 | Preprod  | _not deployed_                                                        |
+
+The frontend (`web/`) is wired to the **Preview** deployment above.
 
 ## What This Does
 
@@ -31,19 +37,27 @@ Under the hood: at deploy time the host discloses only a one-way hash commitment
 - **What the user PROVES without revealing:**
   - Calling `revealGuess()` proves "I know the number whose hash equals the commitment stored on-chain, and here is how it compares to the pending guess" — without revealing the number, unless the guess is correct, in which case revealing it is the deliberate point of winning.
 
+## Privacy Claim
+
+An on-chain observer (or anyone reading the indexer) sees: the `secretHash` commitment, every `pendingGuess` ever submitted, the `attempts` counter, whether the game is `solved`, and the outcome of each reveal (too low / too high / correct). They **cannot** see the host's actual secret number at any point before a winning guess — not in the ledger, not in a transaction, not in a log, not even in the proof itself (the reveal circuit only discloses the three-way comparison result). The number is witnessed entirely off-chain by the host's own wallet and only touches the chain, in the clear, at the deliberate moment someone wins.
+
 ## Tech Stack
 
 - Midnight network (Preview testnet)
 - Compact language (`compact` compiler v0.5.1, `language_version >= 0.23`)
+- Midnight.js SDK (`@midnight-ntwrk/midnight-js-contracts`, DApp Connector API) for the browser frontend
+- React + Vite (`web/`)
+- Lace wallet (browser extension)
 - Node.js v22+
-- Docker (for the local proof server)
+- Docker (for the local proof server, contract deploy only)
 - TypeScript, Vitest
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) v22 or later
-- [Docker](https://www.docker.com/) (running, for the proof server)
-- The Compact compiler (`compact --version` should print a version number)
+- [Lace wallet](https://www.lace.io/) browser extension, connected to the Midnight Preview network, for the frontend
+- [Docker](https://www.docker.com/) (running, for the proof server) — only needed to redeploy the contract, not to run the frontend
+- The Compact compiler (`compact --version` should print a version number) — only needed to recompile the contract
 
 ## Setup
 
@@ -79,6 +93,25 @@ npm run check-balance
 npm run network
 ```
 
+## Run Locally (Frontend)
+
+The frontend lives in `web/` and talks directly to the already-deployed Preview contract above — you don't need Docker or the Compact compiler just to run it.
+
+```bash
+git clone <this-repo-url>
+cd fidentey/web
+npm install
+npm run dev
+# open http://localhost:5173, then connect the Lace wallet (set to Preview network)
+```
+
+To build the static site for deployment:
+
+```bash
+cd web
+npm run build   # outputs to web/dist
+```
+
 ## Run Tests
 
 ```bash
@@ -86,6 +119,10 @@ npm test
 ```
 
 Covers: circuit logic (deterministic deploy, rejecting a reveal from someone who doesn't know the number), state transitions (too low → too high → correct across guesses, rejecting further guesses once solved), and that private inputs are never exposed (the raw secret number never appears anywhere in the public ledger state before a win).
+
+## Demo Video
+
+[PLACEHOLDER — I will add the link after recording]
 
 ## Initial Idea
 
