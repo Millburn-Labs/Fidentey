@@ -1,6 +1,7 @@
 import type { ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
 import type { WalletProvider, MidnightProvider } from '@midnight-ntwrk/midnight-js-types';
 import { Transaction } from '@midnight-ntwrk/midnight-js-protocol/ledger';
+import { Buffer } from 'buffer';
 
 // Bridges the DApp Connector's wire format (hex-encoded transaction strings,
 // per the wallet's own balance/submit calls) to the object-typed
