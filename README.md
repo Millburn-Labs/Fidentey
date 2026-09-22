@@ -4,7 +4,7 @@
 
 ## Live Demo
 
-[PASTE LIVE URL AFTER DEPLOYING FRONTEND]
+https://fidentey-one.vercel.app/
 
 ## Contract Address
 
