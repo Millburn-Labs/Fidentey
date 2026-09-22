@@ -130,4 +130,10 @@ _[LEAVE PLACEHOLDER — to be filled in manually]_
 
 ## Screenshots
 
-_[LEAVE PLACEHOLDER — compile output and contract address screenshots to be added]_
+**Before connecting:**
+
+![Frontend before connecting a wallet — Submit a guess and Reveal (host only) cards visible, wallet not connected](docs/screenshots/wallet-disconnected.png)
+
+**After connecting Lace:**
+
+![Frontend with Lace wallet connected, showing the elided wallet address and a Disconnect button](docs/screenshots/wallet-connected.png)
