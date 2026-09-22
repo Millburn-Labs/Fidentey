@@ -17,10 +17,6 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
-  server: {
-    // The compiled contract module lives in ../managed (outside this Vite root).
-    fs: { allow: ['..'] },
-  },
   optimizeDeps: {
     // esbuild's dev-time dependency pre-bundling reorders these wasm-bindgen
     // glue modules in a way that breaks their internal init ordering
