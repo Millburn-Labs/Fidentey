@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../../",
+  "sources": ["contracts/fidentey.compact", "compiler/standard-library.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAiDA;;;;;;;;;;;;;MAaA,AAAA,UAEC;;OAAA;MAID,AAAA,WAIC;;;;;cAJ0B,OAAe;;;;;;;;;;;;;;;;;;yCAAf,OAAe;;;;;;;wEAAf,OAAe;;;OAIzC;MAMD,AAAA,WAoBC;;;;;;;;;;;;;;;;;;;;;;OAAA;;;;;;;;;;GA3CA;EAND;;;;;UAAY,mBAA4B;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAPxC;;;;;;;;;yEAAoC;IACpC;;;;;;;;;yEAAqC;IACrC;;;;;;;;;yEAAgC;IAChC;;;;;;;;;yEAA8B;IAC9B;;;;;;;;;yEAAkC;IAClC;;;;;;;;;yEAAuC;IAGrC;;;;;;;2HAAsB,mBAAiB;;yEAA7B;UACV,KAAY;IAAZ;;;;;;;2HAAA,KAAY;;yEAAA;IACZ;;;;;;;;;yEAAM;UACN,KAAU;IAAV;;;;;;;2HAAA,KAAU;;yEAAA;UACV,KAAc;IAAd;;;;;;;2HAAA,KAAc;;yEAAA;;;;;;;GACf;ECvDD,AAAA,kBAAA;oEAAA;;;EDyDA,AAAA,mBAAqC;;0DAArC,gBAAqC;;;;;;;;;;;;;;GAAA;EAKrC,AAAA,aAEC,CAFyB,GAAW,kCACH,GAAC,IAClC;EAID,AAAA,cAIC,4BAJ0B,OAAe;qDAChC;;;;;;;;;;;0HAAM;;IACd;;;;;;;2HAAwB,OAAK;;yEAAjB;UACZ,KAAQ;IAAR;;;;;;;;;;6FAAA,KAAQ;;;;wEAAA;;GACT;EAMD,AAAA,cAoBC;qDAnBS;;;;;;;;;;;0HAAM;;UACR,QAA2B;iEACD,QAAM;kEAAK;;;;;;;;;;;uIAAU;;UAE/C,WAA4C,iBAAvB,QAAM;8DAAI;;;;;;;;;;;mIAAY;QACvB,GAAqB;UAAzC,UAA0C,kCAAtB;;;;;;;;;;;2HAAY;wBAAZ,GAAqB,GAAN,QAAM;QAE3C,WAAS;YACX,KAAU;MAAV;;;;;;;6HAAA,KAAU;;2EAAA;MACV;;;;;;;;;2EAAM;MACN;;;;;;;6HAA0B,QAAM;;2EAAlB;;UAEV,UAAQ;cACV,KAAU;QAAV;;;;;;;+HAAA,KAAU;;6EAAA;;cAEV,KAAU;QAAV;;;;;;;+HAAA,KAAU;;6EAAA;;;mCAGP;;;;;;;;;;;wGAAU;GAClB;;;;;;;;;;;;;;;;;;;;;;;;IAxDD;qCAAA;;;;;;;;;;;0GAAoC;KAAA;IACpC;qCAAA;;;;;;;;;;;0GAAqC;KAAA;IACrC;qCAAA;;;;;;;;;;;0GAAgC;KAAA;IAChC;qCAAA;;;;;;;;;;;0GAA8B;KAAA;IAC9B;qCAAA;;;;;;;;;;;0GAAkC;KAAA;IAClC;qCAAA;;;;;;;;;;;0GAAuC;KAAA;;;;;;;;;;EAevC,AAAA,UAEC;;;;UAFyB,GAAW;;;;;;;;wCAAX,GAAW;GAEpC;;;;"
+}

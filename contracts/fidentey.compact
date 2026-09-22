@@ -1,0 +1,99 @@
+// This file is part of Fidentey — Midnight Builder Challenge, Level 1.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Fidentey — Private Guess-the-Number
+//
+// The host commits to a secret number at deploy time. Anyone can submit a
+// guess. Only the host — the one person who actually knows the number — can
+// reveal the result of a guess, and that reveal discloses nothing except
+// "too low", "too high", or "correct". The number itself is never disclosed
+// until a guess is correct, at which point it is revealed deliberately as
+// part of winning.
+//
+// PUBLIC (on-chain ledger state, visible to anyone):
+//   - secretHash     : a one-way commitment (hash) to the host's secret
+//                       number, set once at deploy time via disclose()
+//   - pendingGuess    : the most recently submitted guess (Uint<16>)
+//   - attempts        : how many guesses have been submitted (Counter)
+//   - solved          : whether the game has been won (Boolean)
+//   - lastResult      : outcome of the last reveal — 0 = too low,
+//                       1 = too high, 2 = correct (Uint<8>)
+//   - revealedNumber  : the secret number, populated ONLY once solved,
+//                       via a deliberate disclose() at the moment of winning
+//
+// PRIVATE (witness input, supplied off-chain by the host, never written to
+// the ledger and never visible to the indexer, other players, or the chain
+// itself):
+//   - hostSecretNumber : the raw secret number. Only its *hash* ever touches
+//                        the chain at deploy time; while the game is still
+//                        open, the number itself is never passed to
+//                        disclose() and never leaves the host's local
+//                        witness computation.
+//
+// WHAT THE HOST PROVES WITHOUT REVEALING:
+//   Calling revealGuess() proves "I know the number whose hash equals the
+//   stored secretHash, and here is how it compares to the pending guess" —
+//   without revealing the number itself, unless the guess is correct, in
+//   which case revealing it is the deliberate point of winning.
+
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+export ledger secretHash: Bytes<32>;
+export ledger pendingGuess: Uint<16>;
+export ledger attempts: Counter;
+export ledger solved: Boolean;
+export ledger lastResult: Uint<8>;
+export ledger revealedNumber: Uint<16>;
+
+constructor(initialSecretHash: Bytes<32>) {
+  secretHash = disclose(initialSecretHash);
+  pendingGuess = 0;
+  solved = false;
+  lastResult = 0;
+  revealedNumber = 0;
+}
+
+witness hostSecretNumber(): Uint<16>;
+
+// Pure helper: anyone can locally hash a candidate number to prepare the
+// deploy-time commitment. Touches no ledger state and needs no witness, so
+// it compiles to a plain callable function, not a proof.
+export circuit hashNumber(n: Uint<16>): Bytes<32> {
+  return persistentHash<Uint<16>>(n);
+}
+
+// Any player can submit a guess. It becomes the pending guess anyone
+// (including the host) can then reveal the result for.
+export circuit submitGuess(guess: Uint<16>): [] {
+  assert(!solved, "game already won");
+  pendingGuess = disclose(guess);
+  attempts.increment(1);
+}
+
+// Only the host — the one party who knows the secret number — can reveal
+// the result of the pending guess. The comparison happens entirely inside
+// the zero-knowledge proof; only its outcome (too low / too high / correct)
+// is disclosed. The number itself is disclosed only when the guess wins.
+export circuit revealGuess(): Uint<8> {
+  assert(!solved, "game already won");
+  const secret = hostSecretNumber();
+  assert(persistentHash<Uint<16>>(secret) == secretHash, "not the host: secret does not match commitment");
+
+  const isCorrect = disclose(secret == pendingGuess);
+  const isTooLow = disclose(pendingGuess < secret);
+
+  if (isCorrect) {
+    lastResult = 2 as Uint<8>;
+    solved = true;
+    revealedNumber = disclose(secret);
+  } else {
+    if (isTooLow) {
+      lastResult = 0 as Uint<8>;
+    } else {
+      lastResult = 1 as Uint<8>;
+    }
+  }
+  return lastResult;
+}
