@@ -27,6 +27,24 @@ function outcomeFromCode(code: bigint): RevealOutcome {
 // and the outer wrapper's own message is frequently uninformative on its own.
 // Log every level to the console (with stacks) and surface the deepest
 // non-empty message in the UI instead of just the outer "Error".
+// The wallet's own errors sometimes arrive as an `effect` library Cause object
+// rather than a plain Error — e.g. registering/generating DUST (Midnight's
+// separate, time-accrued fee token; distinct from NIGHT) hasn't caught up yet:
+// { _id: 'Cause', _tag: 'Fail', failure: { _tag: 'Wallet.InsufficientFunds', tokenType: 'dust', ... } }
+function friendlyMessageForCause(cause: unknown): string | null {
+  if (typeof cause !== 'object' || cause === null) return null;
+  const failure = (cause as { failure?: { _tag?: string; tokenType?: string } }).failure;
+  if (failure?._tag === 'Wallet.InsufficientFunds' && failure.tokenType === 'dust') {
+    return (
+      'Your wallet has NIGHT but not enough DUST yet. DUST is Midnight\'s separate ' +
+      'fee-generation token — it accrues gradually from held NIGHT, it isn\'t granted ' +
+      'directly by the faucet. Wait a few minutes after funding (or registering NIGHT ' +
+      'for DUST generation, if your wallet requires that step) and try again.'
+    );
+  }
+  return null;
+}
+
 function describeError(e: unknown): string {
   console.error('[Fidentey] circuit call failed:', e);
   let deepest = 'Unknown error.';
@@ -39,7 +57,7 @@ function describeError(e: unknown): string {
       cur = (cur as { cause?: unknown }).cause;
     } else {
       console.error(`[Fidentey]   cause[${depth}] (non-Error):`, cur);
-      deepest = typeof cur === 'string' ? cur : JSON.stringify(cur);
+      deepest = friendlyMessageForCause(cur) ?? (typeof cur === 'string' ? cur : JSON.stringify(cur));
       cur = undefined;
     }
     depth++;
