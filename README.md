@@ -2,6 +2,10 @@
 
 > A private guess-the-number game on Midnight — prove a guess is too high, too low, or correct without ever revealing the secret number.
 
+## Demo Video
+
+https://www.loom.com/share/c83cbfa7ec054bd68427847c7cb6db8f
+
 ## Live Demo
 
 https://fidentey-one.vercel.app/
@@ -124,10 +128,6 @@ npm test
 ```
 
 Covers: circuit logic (deterministic deploy, rejecting a reveal from someone who doesn't know the number), state transitions (too low → too high → correct across guesses, rejecting further guesses once solved), and that private inputs are never exposed (the raw secret number never appears anywhere in the public ledger state before a win).
-
-## Demo Video
-
-https://www.loom.com/share/c83cbfa7ec054bd68427847c7cb6db8f
 
 ## Initial Idea
 
