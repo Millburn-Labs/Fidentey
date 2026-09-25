@@ -6,6 +6,8 @@
 
 [PLACEHOLDER — I will add the link after recording]
 
+Note: wallet connect/disconnect works for any visitor. Actually submitting a guess or reveal additionally requires Lace's proving step, which currently delegates to a **local proof server on your own machine** (`localhost:6300`) rather than proving purely in-browser — see Prerequisites below if you want to try a real circuit call yourself, not just connect a wallet.
+
 ## Contract Address
 
 | Network  | Address                                                             |
@@ -55,7 +57,7 @@ An on-chain observer (or anyone reading the indexer) sees: the `secretHash` comm
 
 - [Node.js](https://nodejs.org/) v22 or later
 - [Lace wallet](https://www.lace.io/) browser extension, connected to the Midnight Preview network, for the frontend
-- [Docker](https://www.docker.com/) (running, for the proof server) — only needed to redeploy the contract, not to run the frontend
+- [Docker](https://www.docker.com/) (running, for the proof server) — needed both to redeploy the contract **and** to actually submit a circuit call from the frontend. Lace's proving delegates the real computation to this local proof server rather than doing it purely in-browser; without it running, circuit calls fail with `POST http://localhost:6300/check net::ERR_CONNECTION_REFUSED`.
 - The Compact compiler (`compact --version` should print a version number) — only needed to recompile the contract
 
 ## Setup
@@ -94,9 +96,13 @@ npm run network
 
 ## Run Locally (Frontend)
 
-The frontend lives in `web/` and talks directly to the already-deployed Preview contract above — you don't need Docker or the Compact compiler just to run it.
+The frontend lives in `web/` and talks directly to the already-deployed Preview contract above — you don't need the Compact compiler to run it, but you **do** need the local proof server running (see Prerequisites) to actually submit a guess or reveal.
 
 ```bash
+# Start the local proof server first — see the Setup section below for the
+# full docker run command. Circuit calls fail with ERR_CONNECTION_REFUSED
+# on localhost:6300 without it.
+
 git clone <this-repo-url>
 cd fidentey/web
 npm install
