@@ -4,7 +4,7 @@
 
 ## Live Demo
 
-[PLACEHOLDER — I will add the link after recording]
+https://fidentey-one.vercel.app/
 
 Note: wallet connect/disconnect works for any visitor. Actually submitting a guess or reveal additionally requires Lace's proving step, which currently delegates to a **local proof server on your own machine** (`localhost:6300`) rather than proving purely in-browser — see Prerequisites below if you want to try a real circuit call yourself, not just connect a wallet.
 
