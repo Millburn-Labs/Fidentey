@@ -4,14 +4,13 @@
 
 ## Live Demo
 
-https://fidentey-one.vercel.app/
+[PLACEHOLDER — I will add the link after recording]
 
 ## Contract Address
 
 | Network  | Address                                                             |
 |----------|----------------------------------------------------------------------|
 | Preview  | `be09d0480809e425d8b271bb36d3e95992ce9d8d1446fcce86a75319795706b0`   |
-| Preprod  | _not deployed_                                                        |
 
 The frontend (`web/`) is wired to the **Preview** deployment above.
 
