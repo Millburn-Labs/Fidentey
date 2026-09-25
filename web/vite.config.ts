@@ -17,6 +17,17 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  server: {
+    // The Lace wallet's proving logic fetches ZK artifacts (prover/verifier
+    // keys, zkir) from this dev server as a cross-origin request from the
+    // extension's own context. Vite's default CORS handling doesn't reflect
+    // non-http(s) origins like chrome-extension://, so no Access-Control-
+    // Allow-Origin header comes back and the browser blocks the response —
+    // surfacing only as a generic "TypeError: Failed to fetch" with no
+    // indication it was a CORS issue. `origin: true` unconditionally
+    // reflects whatever Origin was sent, http(s) or not.
+    cors: { origin: true },
+  },
   optimizeDeps: {
     // esbuild's dev-time dependency pre-bundling reorders these wasm-bindgen
     // glue modules in a way that breaks their internal init ordering
