@@ -127,7 +127,7 @@ Covers: circuit logic (deterministic deploy, rejecting a reveal from someone who
 
 ## Demo Video
 
-[PLACEHOLDER — I will add the link after recording]
+https://www.loom.com/share/c83cbfa7ec054bd68427847c7cb6db8f
 
 ## Initial Idea
 
